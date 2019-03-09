@@ -226,9 +226,9 @@ impl<'a> Input<'a> {
 
 fn polldir(o: Option<Direction>) -> c_short {
     match o {
-        None => poll::POLLIN | poll::POLLOUT,
-        Some(Direction::Playback) => poll::POLLOUT,
-        Some(Direction::Capture) => poll::POLLIN,
+        None => poll::PollFlags::POLLIN | poll::PollFlags::POLLOUT,
+        Some(Direction::Playback) => poll::PollFlags::POLLOUT,
+        Some(Direction::Capture) => poll::PollFlags::POLLIN,
     }.bits()
 }
 
@@ -1198,13 +1198,13 @@ fn seq_loopback() {
 
     // Create ports
     let sinfo = PortInfo::empty().unwrap();
-    sinfo.set_capability(READ | SUBS_READ);
-    sinfo.set_type(MIDI_GENERIC | APPLICATION);
+    sinfo.set_capability(PortCap::READ | PortCap::SUBS_READ);
+    sinfo.set_type(PortType::MIDI_GENERIC | PortType::APPLICATION);
     s.create_port(&sinfo).unwrap();
     let sport = sinfo.get_port();
     let dinfo = PortInfo::empty().unwrap();
-    dinfo.set_capability(WRITE | SUBS_WRITE);
-    dinfo.set_type(MIDI_GENERIC | APPLICATION);
+    dinfo.set_capability(PortCap::WRITE | PortCap::SUBS_WRITE);
+    dinfo.set_type(PortType::MIDI_GENERIC | PortType::APPLICATION);
     s.create_port(&dinfo).unwrap();
     let dport = dinfo.get_port();
 

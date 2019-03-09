@@ -106,6 +106,7 @@ impl Drop for Info {
 }
 
 /// [snd_pcm_t](http://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m.html) wrapper - start here for audio playback and recording
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PCM(*mut alsa::snd_pcm_t, cell::Cell<bool>);
 
 unsafe impl Send for PCM {}
@@ -552,6 +553,17 @@ impl<'a> HwParams<'a> {
         let mut v = 0;
         acheck!(snd_pcm_hw_params_get_format(self.0, &mut v))
             .and_then(|_| Format::from_c_int(v, "snd_pcm_hw_params_get_format"))
+    }
+
+    pub fn get_supported_formats(&self) -> Vec<Format> {
+        Format::all().into_iter().filter_map(|format| {
+            match acheck!(snd_pcm_hw_params_test_format((self.1).0, self.0, *format as c_int)).ok() {
+                Some(i) if i == 0 => {
+                    Some(*format)
+                }
+                _ => None
+            }
+        }).collect()
     }
 
     pub fn set_access(&self, v: Access) -> Result<()> {
